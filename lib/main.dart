@@ -1,6 +1,6 @@
-
 import 'package:clockchallange/providers/stopwatch_provider.dart';
 import 'package:clockchallange/providers/stopwatch_running_provider.dart';
+import 'package:clockchallange/widgets/add_timezone_view.dart';
 import 'package:clockchallange/widgets/alarm_view.dart';
 import 'package:clockchallange/widgets/stopwatch_view.dart';
 import 'package:clockchallange/widgets/timer_view.dart';
@@ -10,6 +10,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,13 +21,30 @@ void main() async {
   );
 }
 
+final GoRouter _router = GoRouter(
+  routes: <RouteBase>[
+    GoRoute(
+      path: '/',
+      builder: (BuildContext context, GoRouterState state) {
+        return const ClockScreen();
+      },
+    ),
+    GoRoute(
+      path: '/add',
+      builder: (BuildContext context, GoRouterState state) {
+        return const AddTimezoneView();
+      },
+    ),
+  ],
+);
+
 class ClockApp extends StatelessWidget {
   const ClockApp({super.key});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Clock App',
       supportedLocales: const [
         Locale('en', 'US'),
@@ -39,17 +57,24 @@ class ClockApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       theme: ThemeData.light().copyWith(
+        brightness: Brightness.light,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade600),
         textTheme: GoogleFonts.oxygenTextTheme(),
       ),
       darkTheme: ThemeData.dark().copyWith(
+        brightness: Brightness.dark,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade600),
         textTheme: GoogleFonts.oxygenTextTheme(ThemeData.dark().textTheme),
-        appBarTheme: AppBarTheme(
-            backgroundColor: ThemeData.dark().colorScheme.background),
+        appBarTheme: ThemeData.dark().appBarTheme.copyWith(
+            backgroundColor: Colors.black,
+            titleTextStyle: TextStyle(
+              color: Colors.white,
+            ),
+            iconTheme:
+                ThemeData.dark().iconTheme.copyWith(color: Colors.white)),
       ),
       themeMode: ThemeMode.dark,
-      home: const ClockScreen(),
+      routerConfig: _router,
     );
   }
 }
@@ -65,8 +90,24 @@ class ClockScreen extends HookConsumerWidget {
         useCallback<Widget? Function(int)>((int index) {
       if (index == 0) {
         return FloatingActionButton(
-          onPressed: () {},
+          onPressed: () => context.go('/add'),
           child: const Icon(Icons.add),
+        );
+      }
+      if (index == 1) {
+        return FloatingActionButton(
+          onPressed: () async {
+            await showBottomSheet(
+                context: context,
+                builder: (context) {
+                  return SizedBox(
+                    width: 100,
+                    height: 100,
+                  );
+                });
+            // showTimePicker(context: context, initialTime: TimeOfDay.now());
+          },
+          child: const Icon(Icons.add_alarm),
         );
       }
       if (index == 3) {

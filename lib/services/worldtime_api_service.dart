@@ -1,3 +1,4 @@
+import 'dart:convert';
 
 import 'package:clockchallange/models/timezone.dart';
 import 'package:http/http.dart' as http;
@@ -35,5 +36,13 @@ class WorldTimeAPIService {
       return TimeZone.fromJson(response.body);
     }
     return TimeZone();
+  }
+
+  Future<List<String>> getAllTimezones() async {
+    var response = await http.get(Uri.http(baseUrl, "api/timezone"));
+    if (response.statusCode == 200) {
+      return List.from(jsonDecode(response.body));
+    }
+    return [];
   }
 }

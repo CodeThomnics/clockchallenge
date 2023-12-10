@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:ffi';
 
+import 'package:clockchallange/providers/timezone_clocks_notifier_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -18,13 +20,14 @@ class WorldClockView extends HookConsumerWidget {
     var locale = Localizations.localeOf(context);
     var currentTimezone = useState(TimeZone());
     var time = ref.watch(currentTimeProvider);
+    var timezoneClocks = ref.watch(timezoneClocksProvider);
     ref.read(currentTimezoneProvider).whenData(
           (timeZone) => currentTimezone.value = timeZone,
         );
     useEffect(() {
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await WorldTimeAPIService().getCurrentTimezone();
-      });
+      // WidgetsBinding.instance.addPostFrameCallback((_) async {
+      //   await WorldTimeAPIService().getCurrentTimezone();
+      // });
       // print(Platform.localeName);
       var timer = Timer.periodic(const Duration(seconds: 1), (_) {
         var currentTimeNotifier = ref.read(currentTimeProvider.notifier);
@@ -73,26 +76,12 @@ class WorldClockView extends HookConsumerWidget {
         SliverFixedExtentList(
           itemExtent: 124.0,
           delegate: SliverChildListDelegate([
-            CityTimeZone(
-              timezone: "Europe/Helsinki",
-              currentTimeZone: currentTimezone.value,
-            ),
-            CityTimeZone(
-              timezone: "America/Los_Angeles",
-              currentTimeZone: currentTimezone.value,
-            ),
-            CityTimeZone(
-              timezone: "America/New_York",
-              currentTimeZone: currentTimezone.value,
-            ),
-            CityTimeZone(
-              timezone: "Asia/Tokyo",
-              currentTimeZone: currentTimezone.value,
-            ),
-            CityTimeZone(
-              timezone: "Australia/Sydney",
-              currentTimeZone: currentTimezone.value,
-            ),
+            for (var timezoneClock in timezoneClocks) ...[
+              CityTimeZone(
+                timezone: timezoneClock,
+                currentTimeZone: currentTimezone.value,
+              )
+            ],
           ]),
         ),
       ],
@@ -107,7 +96,7 @@ class CityTimeZone extends HookConsumerWidget {
     required this.currentTimeZone,
   });
 
-  final String timezone;
+  final TimeZone timezone;
   final TimeZone currentTimeZone;
 
   @override
@@ -120,18 +109,16 @@ class CityTimeZone extends HookConsumerWidget {
     var timezoneTime = useState(currentTime);
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        var timezoneModel = await WorldTimeAPIService().getTimezone(timezone);
-
         // make the offset of timezone in difference of the current timezone
         // with adding the daylight savings
         var time = currentTime.toUtc();
-        var offset = timezoneModel.rawOffset + timezoneModel.dstOffset;
+        var offset = timezone.rawOffset + timezone.dstOffset;
         if (fetchedTimezone.value.rawOffset > 0) {
           timezoneTime.value = time.add(Duration(seconds: offset));
-        } else if (timezoneModel.rawOffset < 0) {
+        } else if (timezone.rawOffset < 0) {
           timezoneTime.value = time.subtract(Duration(seconds: (offset * -1)));
         }
-        fetchedTimezone.value = timezoneModel;
+        fetchedTimezone.value = timezone;
       });
       return () {};
     }, [
@@ -163,7 +150,7 @@ class CityTimeZone extends HookConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  timezone,
+                  timezone.timezone,
                   style: textTheme.headlineMedium,
                 ),
                 Text(
