@@ -23,10 +23,31 @@ class StopwatchView extends HookConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          CustomPaint(
+            painter: ClockPainter(),
+          ),
           Text(time.value.toString().split('.').first,
               style: Theme.of(context).textTheme.displayLarge),
         ],
       ),
     );
   }
+}
+
+/// custom Clock
+class ClockPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    var paint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 2;
+
+    canvas.drawCircle(Offset(10, 10), 50, paint);
+  }
+
+  @override
+  bool shouldRepaint(ClockPainter oldDelegate) => false;
+
+  @override
+  bool shouldRebuildSemantics(ClockPainter oldDelegate) => false;
 }

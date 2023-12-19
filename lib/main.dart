@@ -67,7 +67,7 @@ class ClockApp extends StatelessWidget {
         textTheme: GoogleFonts.oxygenTextTheme(ThemeData.dark().textTheme),
         appBarTheme: ThemeData.dark().appBarTheme.copyWith(
             backgroundColor: Colors.black,
-            titleTextStyle: TextStyle(
+            titleTextStyle: const TextStyle(
               color: Colors.white,
             ),
             iconTheme:
@@ -96,13 +96,18 @@ class ClockScreen extends HookConsumerWidget {
       }
       if (index == 1) {
         return FloatingActionButton(
-          onPressed: () async {
-            await showBottomSheet(
+          onPressed: () {
+            showModalBottomSheet(
                 context: context,
                 builder: (context) {
                   return SizedBox(
-                    width: 100,
-                    height: 100,
+                    height: MediaQuery.of(context).size.height / 2,
+                    child: const Center(
+                      child: Text(
+                        'Text',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                    ),
                   );
                 });
             // showTimePicker(context: context, initialTime: TimeOfDay.now());
