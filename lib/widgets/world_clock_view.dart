@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ffi';
 
 import 'package:clockchallange/providers/timezone_clocks_notifier_provider.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +8,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:clockchallange/models/timezone.dart';
 import 'package:clockchallange/providers/current_time_provider.dart';
 import 'package:clockchallange/providers/current_timezone_provider.dart';
-import 'package:clockchallange/services/worldtime_api_service.dart';
 import 'package:clockchallange/utils/time_format.dart';
 
 class WorldClockView extends HookConsumerWidget {
@@ -79,7 +77,6 @@ class WorldClockView extends HookConsumerWidget {
             for (var timezoneClock in timezoneClocks) ...[
               CityTimeZone(
                 timezone: timezoneClock,
-                currentTimeZone: currentTimezone.value,
               )
             ],
           ]),
@@ -93,11 +90,9 @@ class CityTimeZone extends HookConsumerWidget {
   const CityTimeZone({
     super.key,
     required this.timezone,
-    required this.currentTimeZone,
   });
 
   final TimeZone timezone;
-  final TimeZone currentTimeZone;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -108,12 +103,12 @@ class CityTimeZone extends HookConsumerWidget {
     var currentTime = ref.watch(currentTimeProvider);
     var timezoneTime = useState(currentTime);
     useEffect(() {
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
         // make the offset of timezone in difference of the current timezone
         // with adding the daylight savings
         var time = currentTime.toUtc();
         var offset = timezone.rawOffset + timezone.dstOffset;
-        if (fetchedTimezone.value.rawOffset > 0) {
+        if (timezone.rawOffset > 0) {
           timezoneTime.value = time.add(Duration(seconds: offset));
         } else if (timezone.rawOffset < 0) {
           timezoneTime.value = time.subtract(Duration(seconds: (offset * -1)));

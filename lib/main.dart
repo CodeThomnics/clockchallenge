@@ -1,5 +1,9 @@
+import 'package:clockchallange/config/theme.dart';
+import 'package:clockchallange/providers/alarm_list_provider.dart';
 import 'package:clockchallange/providers/stopwatch_provider.dart';
 import 'package:clockchallange/providers/stopwatch_running_provider.dart';
+import 'package:clockchallange/providers/timezone_clocks_notifier_provider.dart';
+import 'package:clockchallange/widgets/add_alarm_bottom_sheet.dart';
 import 'package:clockchallange/widgets/add_timezone_view.dart';
 import 'package:clockchallange/widgets/alarm_view.dart';
 import 'package:clockchallange/widgets/stopwatch_view.dart';
@@ -8,7 +12,6 @@ import 'package:clockchallange/widgets/world_clock_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -56,23 +59,26 @@ class ClockApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      theme: ThemeData.light().copyWith(
-        brightness: Brightness.light,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade600),
-        textTheme: GoogleFonts.oxygenTextTheme(),
-      ),
-      darkTheme: ThemeData.dark().copyWith(
-        brightness: Brightness.dark,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade600),
-        textTheme: GoogleFonts.oxygenTextTheme(ThemeData.dark().textTheme),
-        appBarTheme: ThemeData.dark().appBarTheme.copyWith(
-            backgroundColor: Colors.black,
-            titleTextStyle: const TextStyle(
-              color: Colors.white,
-            ),
-            iconTheme:
-                ThemeData.dark().iconTheme.copyWith(color: Colors.white)),
-      ),
+      theme: lightTheme,
+      // ThemeData.light().copyWith(
+      //   brightness: Brightness.light,
+      //   colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade600),
+      //   textTheme: GoogleFonts.oxygenTextTheme(),
+      // ),
+      darkTheme: darkTheme,
+      // ThemeData.dark().copyWith(
+      //   brightness: Brightness.dark,
+      //   colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade800),
+      //   textTheme: GoogleFonts.oxygenTextTheme(ThemeData.dark().textTheme),
+      //   appBarTheme: ThemeData.dark().appBarTheme.copyWith(
+      //         backgroundColor: Colors.black,
+      //         titleTextStyle: const TextStyle(
+      //           color: Colors.white,
+      //         ),
+      //         iconTheme:
+      //             ThemeData.dark().iconTheme.copyWith(color: Colors.white),
+      //       ),
+      // ),
       themeMode: ThemeMode.dark,
       routerConfig: _router,
     );
@@ -98,19 +104,13 @@ class ClockScreen extends HookConsumerWidget {
         return FloatingActionButton(
           onPressed: () {
             showModalBottomSheet(
+                backgroundColor: Colors.grey.shade900,
+                useRootNavigator: true,
+                showDragHandle: true,
                 context: context,
                 builder: (context) {
-                  return SizedBox(
-                    height: MediaQuery.of(context).size.height / 2,
-                    child: const Center(
-                      child: Text(
-                        'Text',
-                        style: TextStyle(color: Colors.black),
-                      ),
-                    ),
-                  );
+                  return AddAlarmBottomSheet();
                 });
-            // showTimePicker(context: context, initialTime: TimeOfDay.now());
           },
           child: const Icon(Icons.add_alarm),
         );
@@ -160,6 +160,14 @@ class ClockScreen extends HookConsumerWidget {
       },
       [],
     );
+
+    useEffect(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        ref.read(alarmListProvider.notifier).setInitial();
+        ref.read(timezoneClocksProvider.notifier).setInitial();
+      });
+      return () {};
+    }, []);
 
     return Scaffold(
       body: IndexedStack(

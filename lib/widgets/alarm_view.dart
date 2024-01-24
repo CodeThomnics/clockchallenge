@@ -1,46 +1,61 @@
+import 'package:clockchallange/models/alarm_model.dart';
+import 'package:clockchallange/providers/alarm_list_provider.dart';
+import 'package:clockchallange/utils/time_format.dart';
+import 'package:dartx/dartx.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class AlarmView extends ConsumerWidget {
+class AlarmView extends HookConsumerWidget {
   const AlarmView({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var theme = Theme.of(context);
-    return CustomScrollView(
-      slivers: [
-        SliverAppBar(
-          automaticallyImplyLeading: false,
-          pinned: true,
-          title: Text(
-            'Alarmen',
-            style: theme.textTheme.headlineSmall,
+    var alarmList = ref.watch(alarmListProvider);
+    var sortedAlarmList = useState([]);
+
+    useEffect(() {
+      sortedAlarmList.value = alarmList
+          .sortedBy((element) => element.hour)
+          .thenBy((element) => element.minute);
+      return () {};
+    }, [alarmList]);
+    if (alarmList.isNotEmpty) {
+      return CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            automaticallyImplyLeading: false,
+            pinned: true,
+            title: Text(
+              'Alarmen',
+              style: theme.textTheme.headlineSmall,
+            ),
           ),
-        ),
-        SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (BuildContext context, int index) {
-              return const AlarmCard();
-            },
-            childCount: 5,
-          ),
-        )
-      ],
-    );
+          SliverList(
+              delegate: SliverChildListDelegate(sortedAlarmList.value
+                  .map((alarm) => AlarmCard(alarm))
+                  .toList()))
+        ],
+      );
+    }
+    return Container();
   }
 }
 
 class AlarmCard extends HookWidget {
-  const AlarmCard({
+  const AlarmCard(
+    this.alarm, {
     super.key,
   });
+
+  final AlarmModel alarm;
 
   @override
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
     var textTheme = theme.textTheme;
 
-    var alarmActive = useState(false);
+    var alarmActive = useState(alarm.active);
 
     return Container(
       height: 140,
@@ -66,9 +81,10 @@ class AlarmCard extends HookWidget {
           children: [
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '20:00',
+                  '${alarm.hour.timeClockFormat()}:${alarm.minute.timeClockFormat()}',
                   style: alarmActive.value
                       ? textTheme.displayMedium
                       : textTheme.displayMedium!.copyWith(
@@ -76,7 +92,9 @@ class AlarmCard extends HookWidget {
                         ),
                 ),
                 Text(
-                  'Een keer',
+                  alarm.name.isNotEmpty
+                      ? 'Een keer | ${alarm.name}'
+                      : 'Een keer',
                   style: alarmActive.value
                       ? textTheme.titleLarge
                       : textTheme.titleLarge!.copyWith(

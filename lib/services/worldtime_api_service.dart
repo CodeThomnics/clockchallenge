@@ -10,7 +10,7 @@ class WorldTimeAPIService {
     var response = await http.get(Uri.https(baseUrl, "ip"));
 
     if (response.statusCode == 200) {
-      return TimeZone.fromJson(response.body);
+      return TimeZone.fromJson(jsonDecode(response.body));
     }
     return TimeZone(
         abbreviation: "CET",
@@ -33,7 +33,7 @@ class WorldTimeAPIService {
   Future<TimeZone> getTimezone(String timeZone) async {
     var response = await http.get(Uri.http(baseUrl, "api/$timeZone"));
     if (response.statusCode == 200) {
-      return TimeZone.fromJson(response.body);
+      return TimeZone.fromJson(jsonDecode(response.body));
     }
     return TimeZone();
   }

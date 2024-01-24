@@ -23,3 +23,13 @@ DateFormat dayMonthDateFormat([dynamic locale]) {
     return DateFormat("E. MMM d");
   }
 }
+
+extension ClockFormat on int {
+  String timeClockFormat() {
+    return this >= 10
+        ? '$this'
+        : this == 0
+            ? '00'
+            : '0$this';
+  }
+}

@@ -1,7 +1,6 @@
 import 'package:clockchallange/providers/timeszones_provider.dart';
 import 'package:clockchallange/providers/timezone_clocks_notifier_provider.dart';
 import 'package:clockchallange/services/worldtime_api_service.dart';
-import 'package:dartx/dartx.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
@@ -15,6 +14,7 @@ class AddTimezoneView extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     var searchController = useSearchController();
     var timezones = ref.watch(timezonesProvider);
+    var timezoneClocksNotifier = ref.read(timezoneClocksProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -68,7 +68,7 @@ class AddTimezoneView extends HookConsumerWidget {
                   .read(timezonesProvider)
                   .firstWhere((timezone) => searchController.text == timezone);
               var newTimezone = await WorldTimeAPIService().getTimezone(choice);
-              ref.read(timezoneClocksProvider).add(newTimezone);
+              timezoneClocksNotifier.add(newTimezone);
               if (context.mounted) {
                 context.go("/");
               }

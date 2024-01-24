@@ -1,7 +1,5 @@
 // ignore_for_file: must_be_immutable
 
-import 'dart:convert';
-
 import 'package:equatable/equatable.dart';
 
 class TimeZone extends Equatable {
@@ -75,11 +73,11 @@ class TimeZone extends Equatable {
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'abbreviation': abbreviation,
       'clientIp': clientIp,
-      'datetime': datetime?.millisecondsSinceEpoch,
+      'datetime': datetime?.toIso8601String(),
       'dayOfWeek': dayOfWeek,
       'dayOfYear': dayOfYear,
       'dst': dst,
@@ -89,13 +87,13 @@ class TimeZone extends Equatable {
       'rawOffset': rawOffset,
       'timezone': timezone,
       'unixtime': unixtime,
-      'utcDatetime': utcDatetime?.millisecondsSinceEpoch,
+      'utcDatetime': utcDatetime?.toIso8601String(),
       'utcOffset': utcOffset,
       'weekNumber': weekNumber,
     };
   }
 
-  factory TimeZone.fromMap(Map<String, dynamic> map) {
+  factory TimeZone.fromJson(Map<String, dynamic> map) {
     return TimeZone(
       abbreviation: map['abbreviation'],
       clientIp: map['clientIp'],
@@ -117,11 +115,6 @@ class TimeZone extends Equatable {
       weekNumber: map['week_number'],
     );
   }
-
-  String toJson() => json.encode(toMap());
-
-  factory TimeZone.fromJson(String source) =>
-      TimeZone.fromMap(json.decode(source));
 
   @override
   String toString() {
